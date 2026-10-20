@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>نُطق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Highlink system: paper/ink, sharp corners, one lime action, gradient on one word only */
+:root{
+  --paper:#ffffff; --paper-2:#f4f4f4; --ink:#0a0a0a; --ink-2:#4a4a4a; --ink-3:#767676; --on-ink:#ffffff;
+  --line:#d4d4d4; --success:#1b7f3b; --error:#c81e1e;
+  --lime:#d0f94a; --on-lime:#0a0a0a; --grad-teal:#4ea5a3; --grad-mint:#6eda8e; --grad-lime:#d8f869;
+  --stage:#0a0a0a;
+  --sans:"Tajawal","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0a0a0a; --paper-2:#161616; --ink:#f5f5f5; --ink-2:#b8b8b8; --ink-3:#8a8a8a; --on-ink:#0a0a0a;
+  --line:#2e2e2e; --success:#4ade80; --error:#f87171; --stage:#000000; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0a0a0a; --paper-2:#161616; --ink:#f5f5f5; --ink-2:#b8b8b8; --ink-3:#8a8a8a; --on-ink:#0a0a0a;
+  --line:#2e2e2e; --success:#4ade80; --error:#f87171; --stage:#000000; color-scheme:dark}
+*{box-sizing:border-box;border-radius:0}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.8;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:15px;color:var(--ink-2);margin:0}
+h1{font-size:44px;line-height:1.15;font-weight:700;margin:4px 0 0;text-wrap:balance}
+.g{background:linear-gradient(90deg,var(--grad-teal),var(--grad-mint),var(--grad-lime));-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (max-width:600px){h1{font-size:34px}}
+.lede{font-size:19px;line-height:1.75;color:var(--ink-2);margin:8px 0 0;max-width:62ch}
+.status{font-size:15px;font-weight:500;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--ink-3);display:inline-block;flex:none}
+.dot.ok{background:var(--success)} .dot.err{background:var(--error)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;background:var(--paper-2);padding:24px}
+@media (max-width:700px){.steps{grid-template-columns:1fr;gap:16px}}
+.step b{font-size:15px;font-weight:500;display:block}
+.step p{margin:4px 0 0;font-size:15px;line-height:1.7;color:var(--ink-2)}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stage{background:var(--stage);position:relative;aspect-ratio:4/3;max-width:100%;overflow:hidden}
+.stage video,.stage #overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.stage .hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#f5f5f5;text-align:center;padding:24px}
+.stage .hint p{margin:0;max-width:36ch;color:#b8b8b8;font-size:15px;line-height:1.7}
+.inset{position:absolute;bottom:12px;inset-inline-end:12px;width:34%;max-width:200px;aspect-ratio:2/1;background:#000;border:1px solid #2e2e2e}
+.inset canvas{width:100%;height:100%;display:block}
+.inset span{position:absolute;top:-22px;inset-inline-end:0;font-size:13px;font-weight:500;color:#b8b8b8}
+.rec-badge{position:absolute;top:12px;inset-inline-start:12px;background:var(--error);color:#fff;font-size:13px;font-weight:500;padding:2px 10px;display:flex;gap:6px;align-items:center}
+.rec-badge::before{content:"";width:8px;height:8px;border-radius:999px;background:#fff;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.meter{position:absolute;bottom:0;inset-inline:0;height:4px;background:rgba(255,255,255,.12)}
+.meter i{display:block;height:100%;width:0;background:var(--lime);transition:width .1s linear}
+.quality{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;font-weight:500;color:var(--ink-2)}
+.quality span{display:flex;align-items:center;gap:6px}
+button{font-family:var(--sans);font-size:15px;font-weight:500;line-height:1;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:14px 20px;cursor:pointer}
+button:hover{background:var(--paper-2)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:var(--lime);color:var(--on-lime);border-color:var(--lime);font-weight:700}
+.primary:hover{background:var(--lime);border-color:var(--ink)}
+.stage .primary:hover{border-color:#fff}
+.solid{background:var(--ink);color:var(--on-ink)}
+.solid:hover{background:var(--ink-2);border-color:var(--ink-2)}
+.big{font-size:17px;padding:18px 24px;width:100%}
+.text-btn{border:0;padding:8px 0;color:var(--ink-2);text-decoration:underline;text-underline-offset:4px}
+.text-btn:hover{background:transparent;color:var(--ink)}
+.hint-sm{font-size:13px;color:var(--ink-3);margin:0}
+.panel{border:1px solid var(--line);padding:24px;display:flex;flex-direction:column;gap:24px;min-width:0}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 4px;color:var(--ink-3)}
+.tabs button:hover{background:transparent;color:var(--ink)}
+.tabs button[aria-selected="true"]{border-bottom-color:var(--ink);color:var(--ink);font-weight:700}
+h2{font-size:22px;line-height:1.35;font-weight:500;margin:0}
+.sub{color:var(--ink-2);font-size:15px;line-height:1.7;margin:4px 0 0}
+.view{display:flex;flex-direction:column;gap:16px}
+.phrases{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.phrases li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.phrases li:first-child{border-top:1px solid var(--line)}
+.phrases li:hover{background:var(--paper-2)}
+.phrases li.sel{background:var(--paper-2);box-shadow:inset -3px 0 0 var(--ink)}
+.phrases .t{flex:1;font-weight:500;min-width:0}
+.phrases .bad{font-size:13px;color:var(--error);font-weight:500}
+.pips{display:flex;gap:4px}
+.pips i{width:8px;height:8px;border-radius:999px;border:1px solid var(--ink-3)}
+.pips i.on{background:var(--ink);border-color:var(--ink)}
+.n{font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums;min-width:2ch}
+.phrases .x{border:0;color:var(--ink-3);padding:4px 6px}
+.add{display:flex;gap:8px}
+.add input{flex:1;min-width:0;font:inherit;font-size:15px;padding:12px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink)}
+.add input:focus{border-color:var(--ink);outline:none}
+.box{background:var(--paper-2);padding:16px;font-size:15px;line-height:1.7;margin:0}
+.box b{font-weight:700}
+.box .err{color:var(--error)}
+.cands{display:flex;flex-direction:column;gap:8px}
+.cand{display:flex;align-items:center;gap:12px;text-align:start;padding:14px 16px;width:100%;border-color:var(--line)}
+.cand.top{border-color:var(--ink)}
+.cand .t{flex:1;font-size:19px;font-weight:700}
+.cand .p{font-family:var(--mono);font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:4ch;text-align:left}
+.cand .bar{width:64px;height:4px;background:var(--line)}
+.cand .bar i{display:block;height:100%;background:var(--ink)}
+.said{font-size:36px;line-height:1.25;font-weight:700;margin:0;text-wrap:balance;min-height:1.25em}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto}
+.log li{padding:8px 12px;max-width:85%;font-size:15px;line-height:1.7}
+.log li.me{background:var(--paper-2);align-self:flex-start}
+.log li.them{border:1px solid var(--line);align-self:flex-end}
+.log li small{display:block;color:var(--ink-3);font-size:13px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+label{font-size:15px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+input[type=checkbox]{accent-color:var(--ink);width:16px;height:16px}
+select{font:inherit;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink);max-width:100%}
+code{font-family:var(--mono);font-size:14px}
+.foot{border-top:1px solid var(--line);padding-top:24px;display:flex;flex-direction:column;gap:12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="brand">هاي لينك</p>
+      <h1>مترجم الشفاه <span class="g">نُطق</span></h1>
+      <p class="lede">تحرّك شفايفك بدون صوت، والتطبيق ينطق عنك باللهجة السعودية. نموذج أولي للتجربة.</p>
+    </div>
+    <div class="status"><span class="dot" id="stDot"></span><span id="stText">الكاميرا مطفية</span></div>
+  </header>
+
+  <section class="steps" aria-label="طريقة الاستخدام">
+    <div class="step"><b>1. المعايرة</b><p>سجّل كل عبارة 3 مرات بشفايفك بدون صوت. التطبيق يتعلم حركة شفايفك أنت.</p></div>
+    <div class="step"><b>2. تكلّم</b><p>حرّك شفايفك بأي عبارة، ويطلع لك أقرب 3 احتمالات. لو متأكد ينطقها مباشرة.</p></div>
+    <div class="step"><b>3. رد السامع</b><p>الشخص السامع يتكلم بصوته، وكلامه يظهر مكتوب على الشاشة.</p></div>
+  </section>
+
+  <div class="grid">
+    <div class="col">
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div class="inset" id="inset" hidden><span>منطقة الشفاه</span><canvas id="mouth" width="240" height="120"></canvas></div>
+        <div class="hint" id="hint">
+          <p>الكاميرا تتابع الشفاه فقط، وكل المعالجة على جهازك. ما يُرفع أي فيديو.</p>
+          <button class="primary" id="startBtn">شغّل الكاميرا</button>
+        </div>
+        <div class="rec-badge" id="recBadge" hidden>يسجّل</div>
+        <div class="meter"><i id="meter"></i></div>
+      </div>
+      <div class="quality" id="quality" aria-live="polite">
+        <span><i class="dot" id="q-face"></i>الوجه</span>
+        <span><i class="dot" id="q-dist"></i>المسافة</span>
+        <span><i class="dot" id="q-angle"></i>الزاوية</span>
+        <span><i class="dot" id="q-light"></i>الإضاءة</span>
+      </div>
+      <button class="primary big" id="recBtn" hidden>سجّل</button>
+      <p class="hint-sm">اضغط مرة للبدء ومرة للإيقاف، أو يوقف وحده بعد 4 ثواني. اختصار: زر المسافة.</p>
+    </div>
+
+    <div class="panel">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-train" aria-selected="true">المعايرة</button>
+        <button role="tab" id="tab-speak" aria-selected="false">تكلّم</button>
+        <button role="tab" id="tab-reply" aria-selected="false">رد السامع</button>
+      </div>
+
+      <section class="view" id="v-train">
+        <div><h2>العبارات</h2><p class="sub">اختر عبارة وسجّلها بشفايفك. النقاط تبيّن عدد العيّنات، والمطلوب 3.</p></div>
+        <ul class="phrases" id="phraseList"></ul>
+        <form class="add" id="addForm">
+          <input id="addInput" placeholder="أضف عبارة جديدة" maxlength="40" aria-label="عبارة جديدة">
+          <button type="submit">أضف</button>
+        </form>
+        <p class="box">الهدف الحالي: <b id="targetName">—</b></p>
+        <div class="row">
+          <button class="solid" id="testBtn">افحص دقة المعايرة</button>
+        </div>
+        <p class="box" id="testOut">الفحص يجرّب كل عيّنة سجلتها ضد الباقي، ويقول لك كم مرة عرف العبارة الصح، ووش العبارات اللي تتلخبط.</p>
+      </section>
+
+      <section class="view" id="v-speak" hidden>
+        <div><h2>وش تبي تقول؟</h2><p class="sub">سجّل عبارة من القائمة، ويطلع لك الأقرب.</p></div>
+        <p class="said" id="said">—</p>
+        <div class="cands" id="cands"></div>
+        <p class="box" id="speakNote"></p>
+        <div class="row">
+          <label for="autoChk"><input type="checkbox" id="autoChk" checked>انطق وحده لما يكون متأكد</label>
+          <label for="learnChk"><input type="checkbox" id="learnChk" checked>تعلّم من اختياري</label>
+        </div>
+      </section>
+
+      <section class="view" id="v-reply" hidden>
+        <div><h2>الشخص السامع يرد</h2><p class="sub">يضغط الزر ويتكلم بصوته، ويظهر كلامه مكتوب.</p></div>
+        <button class="solid" id="listenBtn">اضغط وتكلّم</button>
+        <p class="said" id="heard">—</p>
+        <p class="box" id="replyNote" hidden></p>
+      </section>
+
+      <div class="foot">
+        <h2>المحادثة</h2>
+        <ul class="log" id="log"><li class="them"><small>مثال</small>هلا، كيف أقدر أساعدك؟</li><li class="me"><small>مثال</small>أحتاج مساعدة</li></ul>
+        <div class="row">
+          <label for="voiceSel">الصوت</label>
+          <select id="voiceSel"></select>
+          <button class="text-btn" id="resetBtn">امسح المعايرة</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+const $ = id => document.getElementById(id);
+const STORE = "nutq.v2";
+const DEFAULT_PHRASES = ["السلام عليكم","شكرًا","أبي موية","أحتاج مساعدة","وين الحمام؟","كم السعر؟","أنا تعبان","إيه","لا","اتصل على أهلي"];
+
+/* MediaPipe face-mesh lip rings (verified against FACE_LANDMARKS_LIPS) */
+const LIPS_OUT = [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185];
+const LIPS_IN  = [78,95,88,178,87,14,317,402,318,324,308,415,310,311,312,13,82,81,80,191];
+/* 20 points used as features: corners, mid top/bottom, and the points between, outer + inner */
+const FEAT_PTS = [61,291,0,17,37,267,84,314,40,270,91,321, 78,308,13,14,82,312,87,317];
+const BS = ["jawOpen","mouthClose","mouthFunnel","mouthPucker","mouthRollLower","mouthRollUpper","mouthShrugLower","mouthShrugUpper"];
+const SEQ_LEN = 40, MAX_MS = 4000;
+const MIN_MOUTH_PX = 45, MAX_YAW = 0.22, MAX_PITCH = 0.25, MIN_LUMA = 55;
+
+let state = load();
+let target = state.phrases[0]?.id ?? null;
+let tab = "train";
+let landmarker = null, running = false, lastTs = -1, frameN = 0;
+let recording = false, recFrames = [], recStart = 0, recBad = 0, recTotal = 0;
+let lastGeo = null, energy = 0, luma = 128, quality = {face:false,dist:false,angle:false,light:true};
+let failed = new Set();
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(STORE)); if(s && Array.isArray(s.phrases)) return s; }catch(e){}
+  return { phrases: DEFAULT_PHRASES.map((t,i)=>({id:"p"+i+"_"+Date.now().toString(36), text:t, samples:[]})) };
+}
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+
+/* ---------- UI ---------- */
+function setStatus(text, kind){ $("stText").textContent = text; $("stDot").className = "dot" + (kind ? " "+kind : ""); }
+function renderPhrases(){
+  const ul = $("phraseList"); ul.innerHTML = "";
+  for(const p of state.phrases){
+    const li = document.createElement("li");
+    if(p.id === target) li.className = "sel";
+    const t = document.createElement("span"); t.className = "t"; t.textContent = p.text;
+    if(failed.has(p.id)){ const b=document.createElement("span"); b.className="bad"; b.textContent="تتلخبط"; li.append(t,b); } else li.append(t);
+    const pips = document.createElement("span"); pips.className = "pips";
+    for(let i=0;i<3;i++){ const d=document.createElement("i"); if(i<p.samples.length) d.className="on"; pips.append(d); }
+    const n = document.createElement("span"); n.className="n"; n.textContent = p.samples.length > 3 ? "+"+(p.samples.length-3) : "";
+    const x = document.createElement("button"); x.className="x"; x.textContent="✕"; x.setAttribute("aria-label","احذف "+p.text);
+    x.onclick = e => { e.stopPropagation(); state.phrases = state.phrases.filter(q=>q.id!==p.id); if(target===p.id) target = state.phrases[0]?.id ?? null; save(); renderPhrases(); };
+    li.onclick = () => { target = p.id; renderPhrases(); };
+    li.append(pips, n, x); ul.append(li);
+  }
+  const tp = state.phrases.find(p=>p.id===target);
+  $("targetName").textContent = tp ? tp.text : "—";
+  updateSpeakNote();
+}
+function updateSpeakNote(){
+  const ready = state.phrases.filter(p=>p.samples.length).length;
+  $("speakNote").textContent = ready < 2
+    ? "تحتاج عيّنة وحدة على الأقل لعبارتين قبل التعرّف. ابدأ من تبويب المعايرة."
+    : `جاهز للتعرّف على ${ready} عبارة. كل ما زادت العيّنات، زادت الدقة.`;
+}
+function setTab(t){
+  tab = t;
+  for(const k of ["train","speak","reply"]){ $("tab-"+k).setAttribute("aria-selected", k===t); $("v-"+k).hidden = k!==t; }
+  if(!recording) $("recBtn").textContent = t==="train" ? "سجّل عيّنة للعبارة المختارة" : "اضغط وحرّك شفايفك";
+  $("recBtn").disabled = !running || t==="reply";
+}
+["train","speak","reply"].forEach(k => $("tab-"+k).onclick = () => setTab(k));
+function addLog(text, who){
+  const log = $("log"); [...log.querySelectorAll("li")].forEach(l=>{ if(l.querySelector("small")) l.remove(); });
+  const li = document.createElement("li"); li.className = who; li.textContent = text;
+  log.append(li); log.scrollTop = log.scrollHeight;
+}
+function setQ(id, ok){ $("q-"+id).className = "dot " + (ok ? "ok" : "err"); }
+
+/* ---------- Voice ---------- */
+let voices = [];
+function loadVoices(){
+  voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith("ar"));
+  voices.sort((a,b)=> (b.lang==="ar-SA") - (a.lang==="ar-SA"));
+  const sel = $("voiceSel"); const cur = sel.value; sel.innerHTML = "";
+  if(!voices.length){ const o=document.createElement("option"); o.textContent="صوت المتصفح الافتراضي"; o.value=""; sel.append(o); return; }
+  voices.forEach((v,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=`${v.name} (${v.lang})`; sel.append(o); });
+  if(cur) sel.value = cur;
+}
+if("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text){
+  addLog(text, "me");
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ar-SA"; const v = voices[+$("voiceSel").value]; if(v) u.voice = v; u.rate = .95;
+  speechSynthesis.speak(u);
+}
+
+/* ---------- Camera + model ---------- */
+$("startBtn").onclick = async () => {
+  $("startBtn").disabled = true; setStatus("يحمّل نموذج تتبّع الوجه…");
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user", width:{ideal:1280}, height:{ideal:720}, frameRate:{ideal:30}}, audio:false});
+    const v = $("video"); v.srcObject = stream; await v.play();
+    const fs = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    const opts = d => ({ baseOptions:{ modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate:d },
+      runningMode:"VIDEO", numFaces:1, outputFaceBlendshapes:true, minFaceDetectionConfidence:.6, minFacePresenceConfidence:.6, minTrackingConfidence:.6 });
+    try{ landmarker = await FaceLandmarker.createFromOptions(fs, opts("GPU")); }
+    catch(e){ landmarker = await FaceLandmarker.createFromOptions(fs, opts("CPU")); }
+    $("hint").hidden = true; $("inset").hidden = false; $("recBtn").hidden = false;
+    running = true; setTab(tab); setStatus("جاهز", "ok");
+    requestAnimationFrame(loop);
+  }catch(err){
+    console.error(err); $("startBtn").disabled = false;
+    setStatus("ما قدرت أشغّل الكاميرا", "err");
+    $("hint").querySelector("p").textContent = "افتح الصفحة في Chrome أو Edge، واسمح لها تستخدم الكاميرا، وتأكد إن الإنترنت شغّال لتحميل النموذج أول مرة.";
+  }
+};
+
+/* Lip geometry in a face-aligned frame: origin = mouth centre, x-axis = corner to corner (removes head roll),
+   unit = distance between the eyes (removes distance to camera). Width/height of video fixes aspect. */
+function measure(lm, W, H){
+  const P = i => ({x: lm[i].x*W, y: lm[i].y*H});
+  const L = P(61), R = P(291), eyeL = P(33), eyeR = P(263), nose = P(1), chin = P(152);
+  const cx = (L.x+R.x)/2, cy = (L.y+R.y)/2;
+  const ang = Math.atan2(R.y-L.y, R.x-L.x), ca = Math.cos(-ang), sa = Math.sin(-ang);
+  const eye = Math.hypot(eyeR.x-eyeL.x, eyeR.y-eyeL.y) || 1;
+  const geo = [];
+  for(const i of FEAT_PTS){ const p = P(i), dx = p.x-cx, dy = p.y-cy; geo.push((dx*ca - dy*sa)/eye, (dx*sa + dy*ca)/eye); }
+  const eyeMidX = (eyeL.x+eyeR.x)/2, eyeMidY = (eyeL.y+eyeR.y)/2;
+  const yaw = (nose.x - eyeMidX)/eye;
+  const faceH = Math.hypot(chin.x-eyeMidX, chin.y-eyeMidY) || 1;
+  const pitch = (Math.hypot(nose.x-eyeMidX, nose.y-eyeMidY)/faceH) - 0.45;
+  const mouthPx = Math.hypot(R.x-L.x, R.y-L.y);
+  return { geo, yaw, pitch, mouthPx };
+}
+function blend(bs){ const m = {}; for(const c of bs) m[c.categoryName] = c.score; return BS.map(n => m[n] ?? 0); }
+
+function drawOverlay(lm, W, H){
+  const c = $("overlay");
+  if(c.width !== W){ c.width = W; c.height = H; }
+  const g = c.getContext("2d"); g.clearRect(0,0,W,H);
+  if(!lm) return;
+  const col = recording ? "#f87171" : "#d0f94a";
+  for(const ring of [LIPS_OUT, LIPS_IN]){
+    g.beginPath(); ring.forEach((i,k)=>{ const x=lm[i].x*W, y=lm[i].y*H; k? g.lineTo(x,y) : g.moveTo(x,y); });
+    g.closePath(); g.lineWidth = Math.max(2, W/400); g.strokeStyle = col; g.stroke();
+  }
+}
+/* Zoomed mouth view: shows exactly what is being tracked; also samples brightness */
+function drawMouth(lm, W, H){
+  const mc = $("mouth"), g = mc.getContext("2d");
+  g.fillStyle = "#000"; g.fillRect(0,0,mc.width,mc.height);
+  if(!lm) return;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const i of LIPS_OUT){ const x=lm[i].x*W, y=lm[i].y*H; x0=Math.min(x0,x); x1=Math.max(x1,x); y0=Math.min(y0,y); y1=Math.max(y1,y); }
+  const cx=(x0+x1)/2, cy=(y0+y1)/2, w=(x1-x0)*1.6, h=w/2;
+  const sx=cx-w/2, sy=cy-h/2;
+  g.save(); g.translate(mc.width,0); g.scale(-1,1);
+  g.drawImage($("video"), sx, sy, w, h, 0, 0, mc.width, mc.height);
+  if(frameN % 6 === 0){
+    try{ const d = g.getImageData(0,0,mc.width,mc.height).data; let s=0; for(let k=0;k<d.length;k+=16) s += .299*d[k]+.587*d[k+1]+.114*d[k+2]; luma = s/(d.length/16); }catch(e){}
+  }
+  const col = recording ? "#f87171" : "#d0f94a";
+  for(const ring of [LIPS_OUT, LIPS_IN]){
+    g.beginPath(); ring.forEach((i,k)=>{ const x=(lm[i].x*W-sx)/w*mc.width, y=(lm[i].y*H-sy)/h*mc.height; k? g.lineTo(x,y) : g.moveTo(x,y); });
+    g.closePath(); g.lineWidth=1.5; g.strokeStyle=col; g.stroke();
+  }
+  g.restore();
+}
+
+function loop(){
+  if(!running) return;
+  const v = $("video");
+  if(v.readyState >= 2 && v.videoWidth){
+    const ts = performance.now();
+    if(ts > lastTs){
+      lastTs = ts; frameN++;
+      const W = v.videoWidth, H = v.videoHeight;
+      const r = landmarker.detectForVideo(v, ts);
+      const lm = r.faceLandmarks?.[0], bs = r.faceBlendshapes?.[0]?.categories;
+      drawOverlay(lm, W, H); drawMouth(lm, W, H);
+      let good = false;
+      if(lm && bs){
+        const m = measure(lm, W, H);
+        quality = { face:true, dist: m.mouthPx >= MIN_MOUTH_PX, angle: Math.abs(m.yaw) <= MAX_YAW && Math.abs(m.pitch) <= MAX_PITCH, light: luma >= MIN_LUMA };
+        good = quality.dist && quality.angle && quality.light;
+        if(lastGeo){ let d=0; for(let i=0;i<m.geo.length;i++) d += Math.abs(m.geo[i]-lastGeo[i]); energy = .7*energy + .3*d; }
+        lastGeo = m.geo;
+        if(recording){ recTotal++; if(good) recFrames.push({f: m.geo.concat(blend(bs)), t: ts}); else recBad++; }
+      } else {
+        quality = { face:false, dist:false, angle:false, light: luma >= MIN_LUMA };
+        if(recording){ recTotal++; recBad++; }
+      }
+      if(frameN % 4 === 0){
+        setQ("face", quality.face); setQ("dist", quality.dist); setQ("angle", quality.angle); setQ("light", quality.light);
+        if(!recording){
+          if(!quality.face) setStatus("ما أشوف وجه · خل وجهك قدام الكاميرا", "err");
+          else if(!quality.dist) setStatus("قرّب من الكاميرا شوي", "err");
+          else if(!quality.angle) setStatus("وجّه وجهك للكاميرا مباشرة", "err");
+          else if(!quality.light) setStatus("الإضاءة ضعيفة · خل الضوء على وجهك", "err");
+          else setStatus("جاهز · الالتقاط ممتاز", "ok");
+        }
+      }
+      $("meter").style.width = Math.min(100, energy*90) + "%";
+      if(recording && ts - recStart > MAX_MS) stopRec();
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Recording ---------- */
+function startRec(){
+  if(!running || recording || tab==="reply") return;
+  if(tab==="train" && !target){ setStatus("اختر عبارة أول", "err"); return; }
+  recFrames = []; recBad = 0; recTotal = 0; recStart = performance.now(); recording = true;
+  $("recBadge").hidden = false; $("recBtn").textContent = "إيقاف";
+}
+function stopRec(){
+  if(!recording) return;
+  recording = false; $("recBadge").hidden = true; setTab(tab);
+  if(recTotal && recBad/recTotal > .3){
+    setStatus("التسجيل ما انحسب · الوجه طلع من الإطار أو الإضاءة ضعيفة. جرّب مرة ثانية", "err"); return;
+  }
+  const seq = prepare(recFrames);
+  if(!seq){ setStatus("التسجيل قصير أو ما فيه حركة شفايف · جرّب مرة ثانية", "err"); return; }
+  if(tab==="train") addSample(target, seq); else recognize(seq);
+}
+$("recBtn").onclick = () => recording ? stopRec() : startRec();
+document.addEventListener("keydown", e => {
+  if(e.code==="Space" && !["INPUT","SELECT","TEXTAREA","BUTTON"].includes(document.activeElement.tagName)){ e.preventDefault(); recording ? stopRec() : startRec(); }
+});
+
+/* Trim still frames at both ends, then resample by time to a fixed length */
+function prepare(frames){
+  if(frames.length < 8) return null;
+  const G = 2*FEAT_PTS.length;
+  const m = frames.map((fr,i)=> { if(!i) return 0; let s=0; for(let k=0;k<G;k++) s += Math.abs(fr.f[k]-frames[i-1].f[k]); return s; });
+  const sm = m.map((_,i)=> (m[i-1]??m[i]) + m[i] + (m[i+1]??m[i]));
+  const peak = Math.max(...sm); if(peak < 0.08) return null;
+  let a = 0, b = frames.length-1; const th = peak*0.15;
+  while(a < b && sm[a] < th) a++; while(b > a && sm[b] < th) b--;
+  a = Math.max(0, a-3); b = Math.min(frames.length-1, b+3);
+  const cut = frames.slice(a, b+1); if(cut.length < 6) return null;
+  const t0 = cut[0].t, t1 = cut[cut.length-1].t; if(t1 - t0 < 250) return null;
+  const out = []; let j = 0;
+  for(let i=0;i<SEQ_LEN;i++){
+    const t = t0 + i*(t1-t0)/(SEQ_LEN-1);
+    while(j < cut.length-2 && cut[j+1].t < t) j++;
+    const A = cut[j], B = cut[j+1], u = Math.min(1, Math.max(0, (t-A.t)/((B.t-A.t)||1)));
+    out.push(A.f.map((v,k)=> +((v*(1-u) + B.f[k]*u).toFixed(4))));
+  }
+  return out;
+}
+
+/* Per-feature standardisation from this user's own calibration, plus velocity features */
+function stats(){
+  const all = state.phrases.flatMap(p=>p.samples.flat());
+  if(!all.length) return null;
+  const D = all[0].length, mu = new Float64Array(D), sd = new Float64Array(D);
+  for(const f of all) for(let k=0;k<D;k++) mu[k]+=f[k];
+  for(let k=0;k<D;k++) mu[k]/=all.length;
+  for(const f of all) for(let k=0;k<D;k++){ const q=f[k]-mu[k]; sd[k]+=q*q; }
+  for(let k=0;k<D;k++) sd[k] = Math.max(Math.sqrt(sd[k]/all.length), 1e-3);
+  return {mu, sd};
+}
+function encode(seq, st){
+  const z = seq.map(f => f.map((v,k)=>(v-st.mu[k])/st.sd[k]));
+  return z.map((f,i)=> { const p = z[Math.max(0,i-1)], n = z[Math.min(z.length-1,i+1)]; return f.concat(f.map((_,k)=>(n[k]-p[k]))); });
+}
+function dtw(A, B, band=8){
+  const n=A.length, m=B.length, INF=1e12, D=A[0].length;
+  let prev = new Float64Array(m+1).fill(INF), cur = new Float64Array(m+1);
+  prev[0] = 0;
+  for(let i=1;i<=n;i++){
+    cur.fill(INF);
+    const lo = Math.max(1, i-band), hi = Math.min(m, i+band), a = A[i-1];
+    for(let j=lo;j<=hi;j++){
+      const b = B[j-1]; let d=0; for(let k=0;k<D;k++){ const q=a[k]-b[k]; d+=q*q; }
+      cur[j] = Math.sqrt(d/D) + Math.min(prev[j], cur[j-1], prev[j-1]);
+    }
+    [prev, cur] = [cur, prev];
+  }
+  return prev[m]/(n+m);
+}
+function score(q, pool, skip){
+  return pool.map(({p, enc}) => {
+    const ds = enc.filter((_,i)=> !(skip && skip.p===p && skip.i===i)).map(s=>dtw(q,s)).sort((a,b)=>a-b);
+    if(!ds.length) return null;
+    const d = ds.length > 1 ? (ds[0]*2 + ds[1])/3 : ds[0];
+    return {p, d};
+  }).filter(Boolean).sort((a,b)=>a.d-b.d);
+}
+function encodedPool(){
+  const st = stats(); if(!st) return null;
+  return { st, pool: state.phrases.filter(p=>p.samples.length).map(p=>({p, enc: p.samples.map(s=>encode(s, st))})) };
+}
+
+function addSample(id, seq){
+  const p = state.phrases.find(x=>x.id===id); if(!p) return;
+  p.samples.push(seq); if(p.samples.length > 8) p.samples.shift();
+  failed.delete(p.id); save();
+  if(p.samples.length >= 3 && tab==="train"){
+    const i = state.phrases.indexOf(p), next = state.phrases.slice(i+1).concat(state.phrases.slice(0,i)).find(q=>q.samples.length<3);
+    if(next) target = next.id;
+  }
+  renderPhrases();
+  setStatus(`انحفظت عيّنة لـ«${p.text}» (${p.samples.length})`, "ok");
+}
+
+function recognize(seq){
+  const ep = encodedPool();
+  if(!ep || ep.pool.length < 2){ updateSpeakNote(); return; }
+  const scored = score(encode(seq, ep.st), ep.pool);
+  const temp = Math.max(0.02, scored[0].d*0.2);
+  const ex = scored.map(s=>Math.exp(-(s.d-scored[0].d)/temp)); const sum = ex.reduce((a,b)=>a+b,0);
+  scored.forEach((s,i)=> s.prob = ex[i]/sum);
+  const top = scored.slice(0,3);
+  const margin = scored[1] ? 1 - scored[0].d/scored[1].d : 1;
+  const confident = top[0].prob > .6 && margin > .15 && top[0].p.samples.length >= 2;
+  showCands(top, seq, confident);
+}
+function showCands(top, seq, confident){
+  const box = $("cands"); box.innerHTML = "";
+  top.forEach((s,i)=>{
+    const b = document.createElement("button"); b.className = "cand" + (i===0 ? " top":"");
+    const t = document.createElement("span"); t.className="t"; t.textContent = s.p.text;
+    const bar = document.createElement("span"); bar.className="bar"; const fill=document.createElement("i"); fill.style.width = Math.round(s.prob*100)+"%"; bar.append(fill);
+    const pr = document.createElement("span"); pr.className="p"; pr.textContent = Math.round(s.prob*100)+"%";
+    b.append(t, bar, pr); b.onclick = () => choose(s.p, seq); box.append(b);
+  });
+  const none = document.createElement("button"); none.className="text-btn"; none.textContent = "ولا وحدة منها، أعيد";
+  none.onclick = () => { box.innerHTML=""; $("said").textContent = "—"; startRec(); };
+  box.append(none);
+  if(confident && $("autoChk").checked){
+    $("said").textContent = top[0].p.text; speak(top[0].p.text);
+    $("speakNote").textContent = "نطقتها وحدي لأن الاحتمال واضح. لو غلط، اختر الصح من القائمة.";
+  } else {
+    $("said").textContent = "وش قصدك؟";
+    $("speakNote").textContent = "الكلمة مو واضحة كفاية. اختر الصح من الاحتمالات، وأتعلم منها.";
+  }
+}
+function choose(p, seq){
+  $("said").textContent = p.text; speak(p.text);
+  if($("learnChk").checked){ p.samples.push(seq); if(p.samples.length > 8) p.samples.shift(); save(); renderPhrases(); }
+  $("cands").innerHTML = "";
+}
+
+/* Leave-one-out check: each recorded sample is classified against all the others */
+$("testBtn").onclick = () => {
+  const ep = encodedPool(), out = $("testOut");
+  if(!ep || ep.pool.length < 2 || ep.pool.every(x=>x.enc.length < 2)){ out.textContent = "سجّل عيّنتين على الأقل لعبارتين قبل الفحص."; return; }
+  let ok = 0, n = 0; const conf = new Map(); failed = new Set();
+  for(const {p, enc} of ep.pool){
+    if(enc.length < 2) continue;
+    enc.forEach((q, i) => {
+      const s = score(q, ep.pool, {p, i}); n++;
+      if(s[0].p === p) ok++;
+      else { failed.add(p.id); const k = [p.text, s[0].p.text].sort().join(" ↔ "); conf.set(k, (conf.get(k)||0)+1); }
+    });
+  }
+  const pct = Math.round(ok/n*100);
+  const worst = [...conf.entries()].sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>"«"+k.replace(" ↔ ","» مع «")+"»");
+  out.innerHTML = "";
+  const b = document.createElement("b"); b.textContent = `الدقة: ${ok} من ${n} (${pct}%)`; out.append(b);
+  out.append(document.createElement("br"));
+  out.append(document.createTextNode(pct >= 85 ? "الالتقاط شغّال صح والعبارات واضحة عن بعض." :
+    pct >= 60 ? "الالتقاط شغّال، بس فيه عبارات متشابهة. أعد تسجيلها أو زد عيّناتها." :
+    "الدقة ضعيفة. تأكد إن النقاط الأربع تحت الكاميرا خضراء، وحرّك شفايفك بوضوح، وأعد التسجيل."));
+  if(worst.length){ out.append(document.createElement("br")); const s=document.createElement("span"); s.className="err"; s.textContent = "تتلخبط: " + worst.join("، "); out.append(s); }
+  renderPhrases();
+};
+
+/* ---------- Hearing person reply ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+$("listenBtn").onclick = () => {
+  const note = $("replyNote");
+  if(!SR){ note.hidden=false; note.textContent="المتصفح هذا ما يدعم تحويل الكلام لنص. جرّب Chrome أو Edge."; return; }
+  const r = new SR(); r.lang = "ar-SA"; r.interimResults = true; r.maxAlternatives = 1;
+  $("listenBtn").disabled = true; $("listenBtn").textContent = "أسمعك…"; $("heard").textContent = "…"; note.hidden = true;
+  let final = "";
+  r.onresult = e => { let txt=""; for(const res of e.results){ txt += res[0].transcript; if(res.isFinal) final = txt; } $("heard").textContent = txt; };
+  r.onerror = e => { note.hidden=false; note.textContent = e.error==="not-allowed" ? "اسمح للصفحة تستخدم المايك." : "ما قدرت أسمع. جرّب مرة ثانية."; };
+  r.onend = () => { $("listenBtn").disabled=false; $("listenBtn").textContent="اضغط وتكلّم"; const t = final || $("heard").textContent; if(t && t!=="…") addLog(t, "them"); };
+  r.start();
+};
+
+/* ---------- Misc ---------- */
+$("addForm").addEventListener("submit", e => {
+  e.preventDefault(); const t = $("addInput").value.trim(); if(!t) return;
+  const p = {id:"p"+Date.now().toString(36), text:t, samples:[]}; state.phrases.push(p); target = p.id;
+  $("addInput").value = ""; save(); renderPhrases();
+});
+let resetArmed = false;
+$("resetBtn").onclick = () => {
+  if(!resetArmed){ resetArmed = true; $("resetBtn").textContent = "متأكد؟ اضغط مرة ثانية"; setTimeout(()=>{ resetArmed=false; $("resetBtn").textContent="امسح المعايرة"; }, 3000); return; }
+  state.phrases.forEach(p=>p.samples=[]); failed = new Set(); save(); renderPhrases(); resetArmed=false; $("resetBtn").textContent="امسح المعايرة";
+  setStatus("انمسحت كل العيّنات", "ok");
+};
+if(!navigator.mediaDevices?.getUserMedia){ setStatus("المتصفح ما يسمح بالكاميرا هنا", "err"); }
+renderPhrases(); setTab("train");
+</script>
+</body>
+</html>
