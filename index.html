@@ -216,7 +216,7 @@ code{font-family:var(--mono);font-size:14px}
 import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 
 const $ = id => document.getElementById(id);
-const STORE = "nutq.v2";
+const STORE = "nutq.v3";
 const DEFAULT_PHRASES = ["السلام عليكم","شكرًا","أبي موية","أحتاج مساعدة","وين الحمام؟","كم السعر؟","أنا تعبان","إيه","لا","اتصل على أهلي"];
 
 /* MediaPipe face-mesh lip rings (verified against FACE_LANDMARKS_LIPS) */
@@ -226,7 +226,11 @@ const LIPS_IN  = [78,95,88,178,87,14,317,402,318,324,308,415,310,311,312,13,82,8
 const FEAT_PTS = [61,291,0,17,37,267,84,314,40,270,91,321, 78,308,13,14,82,312,87,317];
 const BS = ["jawOpen","mouthClose","mouthFunnel","mouthPucker","mouthRollLower","mouthRollUpper","mouthShrugLower","mouthShrugUpper"];
 const SEQ_LEN = 40, MAX_MS = 4000;
-const MIN_MOUTH_PX = 45, MAX_YAW = 0.22, MAX_PITCH = 0.25, MIN_LUMA = 55;
+const MIN_MOUTH_PX = 40, MAX_YAW = 0.25, MAX_PITCH = 0.28, MIN_LUMA = 32;
+/* Mouth image features: aligned grey crop of the lips -> 2D DCT, low frequencies kept (classic visual-speech front end) */
+const ROI_W = 64, ROI_H = 32, DCT_U = 8, DCT_V = 6;
+const N_GEO = 2*20, N_BS = 8, N_DCT = DCT_U*DCT_V - 1;
+const GROUP_SHARE = { geo: .40, bs: .15, dct: .45 };
 
 let state = load();
 let target = state.phrases[0]?.id ?? null;
@@ -339,7 +343,52 @@ function measure(lm, W, H){
   const faceH = Math.hypot(chin.x-eyeMidX, chin.y-eyeMidY) || 1;
   const pitch = (Math.hypot(nose.x-eyeMidX, nose.y-eyeMidY)/faceH) - 0.45;
   const mouthPx = Math.hypot(R.x-L.x, R.y-L.y);
-  return { geo, yaw, pitch, mouthPx };
+  return { geo, yaw, pitch, mouthPx, ang, cx, cy };
+}
+
+/* Adaptive smoothing of landmarks (one-euro style): steady when still, responsive when moving */
+let smooth = null;
+function smoothLm(lm, W){
+  if(!smooth || smooth.length !== lm.length){ smooth = lm.map(p=>({x:p.x,y:p.y})); return smooth; }
+  for(let i=0;i<lm.length;i++){
+    const s = smooth[i], p = lm[i], dx = p.x-s.x, dy = p.y-s.y;
+    const speed = Math.hypot(dx, dy)*W;
+    const a = Math.min(.9, .3 + speed*.12);
+    s.x += a*dx; s.y += a*dy;
+  }
+  return smooth;
+}
+
+const roiCanvas = document.createElement("canvas"); roiCanvas.width = ROI_W; roiCanvas.height = ROI_H;
+const roiCtx = roiCanvas.getContext("2d", { willReadFrequently: true });
+const COS_U = [], COS_V = [];
+for(let u=0;u<DCT_U;u++){ COS_U.push(Float64Array.from({length:ROI_W},(_,x)=>Math.cos(Math.PI*(2*x+1)*u/(2*ROI_W)))); }
+for(let v=0;v<DCT_V;v++){ COS_V.push(Float64Array.from({length:ROI_H},(_,y)=>Math.cos(Math.PI*(2*y+1)*v/(2*ROI_H)))); }
+function dctFeatures(gray){
+  const out = [];
+  for(let v=0;v<DCT_V;v++) for(let u=0;u<DCT_U;u++){
+    if(!u && !v) continue;
+    let s = 0;
+    for(let y=0;y<ROI_H;y++){ const cv = COS_V[v][y], row = y*ROI_W; let r = 0; for(let x=0;x<ROI_W;x++) r += gray[row+x]*COS_U[u][x]; s += r*cv; }
+    out.push(s/(ROI_W*ROI_H)*4);
+  }
+  return out;
+}
+function mouthImage(video, m){
+  /* crop rotated with the head so the lips always sit level, scaled so the mouth fills ~70% of the width */
+  const scale = ROI_W*0.7 / Math.max(m.mouthPx, 1);
+  roiCtx.setTransform(1,0,0,1,0,0);
+  roiCtx.fillStyle = "#000"; roiCtx.fillRect(0,0,ROI_W,ROI_H);
+  roiCtx.translate(ROI_W/2, ROI_H/2);
+  roiCtx.rotate(-m.ang);
+  roiCtx.scale(scale, scale);
+  roiCtx.drawImage(video, -m.cx, -m.cy);
+  const d = roiCtx.getImageData(0,0,ROI_W,ROI_H).data;
+  const g = new Float64Array(ROI_W*ROI_H); let mu = 0;
+  for(let i=0,j=0;i<g.length;i++,j+=4){ g[i] = .299*d[j]+.587*d[j+1]+.114*d[j+2]; mu += g[i]; }
+  mu /= g.length; let sd = 0; for(const v of g) sd += (v-mu)*(v-mu); sd = Math.sqrt(sd/g.length) || 1;
+  for(let i=0;i<g.length;i++) g[i] = (g[i]-mu)/sd;   /* removes brightness and contrast differences */
+  return dctFeatures(g);
 }
 function blend(bs){ const m = {}; for(const c of bs) m[c.categoryName] = c.score; return BS.map(n => m[n] ?? 0); }
 
@@ -385,7 +434,9 @@ function loop(){
       lastTs = ts; frameN++;
       const W = v.videoWidth, H = v.videoHeight;
       const r = landmarker.detectForVideo(v, ts);
-      const lm = r.faceLandmarks?.[0], bs = r.faceBlendshapes?.[0]?.categories;
+      const raw = r.faceLandmarks?.[0], bs = r.faceBlendshapes?.[0]?.categories;
+      const lm = raw ? smoothLm(raw, W) : null;
+      if(!raw) smooth = null;
       drawOverlay(lm, W, H); drawMouth(lm, W, H);
       let good = false;
       if(lm && bs){
@@ -394,7 +445,7 @@ function loop(){
         good = quality.dist && quality.angle && quality.light;
         if(lastGeo){ let d=0; for(let i=0;i<m.geo.length;i++) d += Math.abs(m.geo[i]-lastGeo[i]); energy = .7*energy + .3*d; }
         lastGeo = m.geo;
-        if(recording){ recTotal++; if(good) recFrames.push({f: m.geo.concat(blend(bs)), t: ts}); else recBad++; }
+        if(recording){ recTotal++; if(good) recFrames.push({f: m.geo.concat(blend(bs), mouthImage(v, m)), t: ts}); else recBad++; }
       } else {
         quality = { face:false, dist:false, angle:false, light: luma >= MIN_LUMA };
         if(recording){ recTotal++; recBad++; }
@@ -471,8 +522,17 @@ function stats(){
   for(let k=0;k<D;k++) sd[k] = Math.max(Math.sqrt(sd[k]/all.length), 1e-3);
   return {mu, sd};
 }
+/* each feature group gets a fixed share of the distance, whatever its size */
+const GROUP_W = (() => {
+  const D = N_GEO + N_BS + N_DCT, w = [];
+  for(let k=0;k<D;k++){
+    const [n, s] = k < N_GEO ? [N_GEO, GROUP_SHARE.geo] : k < N_GEO+N_BS ? [N_BS, GROUP_SHARE.bs] : [N_DCT, GROUP_SHARE.dct];
+    w.push(Math.sqrt(s*D/n));
+  }
+  return w;
+})();
 function encode(seq, st){
-  const z = seq.map(f => f.map((v,k)=>(v-st.mu[k])/st.sd[k]));
+  const z = seq.map(f => f.map((v,k)=>(v-st.mu[k])/st.sd[k]*GROUP_W[k]));
   return z.map((f,i)=> { const p = z[Math.max(0,i-1)], n = z[Math.min(z.length-1,i+1)]; return f.concat(f.map((_,k)=>(n[k]-p[k]))); });
 }
 function dtw(A, B, band=8){
